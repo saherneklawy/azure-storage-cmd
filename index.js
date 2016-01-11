@@ -3,11 +3,42 @@
 
 var _ = require('lodash');
 var azure = require('azure-storage');
+var fs = require('fs');
+var path = require('path');
 
-var our_account_name='kagglesaher'
-var our_account_key='paBrkQ6r2rZW7+lLixmdG6UJwbFy86pKS8CnF8WRCs+lHYANyLjPIqqvl1XYs1kd4ffHh1aXle+ypqhu4ym2IQ=='
-var our_container = "uploadedresources"
-var blobService = azure.createBlobService(our_account_name, our_account_key);
+var config_file_name = '.azrblb.cfg'
+function getConfigFilePath() {
+  return path.join(getUserHome(), config_file_name)
+}
+
+function getUserHome() {
+  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+
+function read_config() {
+  if(fs.existsSync(getConfigFilePath()))
+    config = JSON.parse(fs.readFileSync(getConfigFilePath()));
+  else
+    config = {'accounts': {}};
+  return config;
+}
+
+function write_config(config) {
+  fs.writeFileSync(getConfigFilePath(), JSON.stringify(config, null, 2), 'utf8');
+}
+
+function getBlobService(key) {
+  var config = read_config();
+  key = key || Object.keys(config.accounts)[0];
+  if(!key) {
+    throw new Error("Need to at least have 1 account added first");
+  }
+  var name = config.accounts[key].name;
+  var key = config.accounts[key].key;
+  return azure.createBlobService(name, key);
+}
+
+
 var currentToken = undefined;
 
 function print_list(l) {
@@ -15,6 +46,7 @@ function print_list(l) {
 }
 
 function ls(callback, container) {
+  var blobService = getBlobService();
   if(container) {
     blobService.listBlobsSegmented(container, currentToken,
         function(error, result, response) {
@@ -48,15 +80,22 @@ function move(from, to) {
 }
 
 function remove(file) {
-  console.log("moving ...")
+  console.log("removing ...")
 }
 
-function addAccount() {
-  console.log("adding account ...")
+function addAccount(name, key, alias) {
+  alias = alias || name;
+  var config = read_config();
+  config['accounts'] = config['accounts'] || {};
+  config['accounts'][alias] = {name: name, key: key};
+  write_config(config);
 }
 
-function removeAccount() {
-  console.log("removing account ...")
+function removeAccount(id) {
+  var config = read_config();
+  config['accounts'] = config['accounts'] || {};
+  config['accounts'][id] = null;
+  write_config(config);
 }
 
 var program = require('commander');
