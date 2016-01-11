@@ -39,23 +39,56 @@ function ls(callback, container) {
   }
 }
 
-function configure() {
-  console.log("configuring ...")
+function copy(from, to) {
+  console.log("copying ...")
+}
+
+function move(from, to) {
+  console.log("moving ...")
+}
+
+function remove(file) {
+  console.log("moving ...")
+}
+
+function addAccount() {
+  console.log("adding account ...")
+}
+
+function removeAccount() {
+  console.log("removing account ...")
 }
 
 var program = require('commander');
 
 program
 .version('0.0.1')
-.option('-v, --verbose', 'Add bbq sauce')
+.option('-v, --verbose', 'Run in verbose mode')
 
 program
   .command('ls [container]')
   .action(function(container) {ls(print_list, container)});
 
 program
-  .command('configure')
-  .action(configure);
+  .command('cp <from> <to>')
+  .action(copy);
+
+program
+  .command('rm <file>')
+  .action(remove);
+
+program
+  .command('mv <from> <to>')
+  .action(remove);
+
+program
+  .command('add-account <name> <key> [alias]')
+  .action(addAccount);
+
+program
+  .command('rm-account <id>')
+  .action(removeAccount);
+
 
 program.parse(process.argv);
 
