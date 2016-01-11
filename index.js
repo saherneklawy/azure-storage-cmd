@@ -1,3 +1,6 @@
+#!/usr/bin/node
+
+
 var _ = require('lodash');
 var azure = require('azure-storage');
 
