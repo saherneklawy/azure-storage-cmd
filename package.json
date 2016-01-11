@@ -1,0 +1,16 @@
+{
+  "name": "azure-storage-cmd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "azure-storage": "^0.7.0",
+    "commander": "^2.9.0",
+    "lodash": "^3.10.1"
+  }
+}
