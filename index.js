@@ -286,14 +286,17 @@ program
 
 program
   .command('cp <from> <to>')
+  .alias('copy')
   .action(copy);
 
 program
   .command('rm <file>')
+  .alias('remove')
   .action(remove);
 
 program
   .command('mv <from> <to>')
+  .alias('remove')
   .action(remove);
 
 program
@@ -302,6 +305,7 @@ program
 
 program
   .command('rm-account <id>')
+  .alias('remove-account')
   .action(removeAccount);
 
 
