@@ -1,6 +1,5 @@
 #!/usr/bin/node
 
-
 var _ = require('lodash');
 var azure = require('azure-storage');
 var fs = require('fs');
@@ -31,7 +30,8 @@ function parseUri(uri) {
     protocol: protocol,
     path: path,
     account: account,
-    container: container
+    container: container,
+    uri: uri
   }
 }
 
@@ -123,8 +123,73 @@ function ls(callback, uri) {
   }
 }
 
+function copy_local_to_blob(from_obj, to_obj, force) {
+  if(program.verbose) console.log("in copy_local_to_blob")
+  var options = {};
+  if(!force) {
+    options.accessConditions = azure.AccessCondition.generateIfNotExistsCondition();
+  }
+  if(!to_obj.path || to_obj.path.length == 0) {
+    to_obj.path = from_obj.path;
+  }
+
+  to_blob_service = getBlobService(to_obj.account);
+  to_blob_service.createContainerIfNotExists(to_obj.container, {
+    publicAccessLevel: 'blob'
+  }, function(error, result, response) {
+    if (!error) {
+      // if result = true, container was created.
+      // if result = false, container already existed.
+      if(result) {
+        console.log("Created container for: " + to_obj.uri);
+      }
+      speed_summary = to_blob_service.createBlockBlobFromLocalFile(to_obj.container,
+        to_obj.path,
+        from_obj.path,
+        options,
+        function(error, result, response) {
+          if(!error) {
+            if(program.verbose)
+              console.log(JSON.stringify(result, null, 2));
+          }
+          else {
+            throw error;
+          }
+        });
+    }
+    else {
+      throw error;
+    }
+  });
+}
+
+function pull_from_blob(from_obj, to_obj, force) {
+  if(program.verbose) console.log("in pull_from_blob")
+  from_blob_service = getBlobService(from_obj.account);
+}
+function copy_blob_to_blob(from_obj, to_obj, force) {
+  if(program.verbose) console.log("in copy_blob_to_blob")
+  from_blob_service = getBlobService(from_obj.account);
+  to_blob_service = getBlobService(to_obj.account);
+}
+
 function copy(from, to) {
-  console.log("copying ...")
+  var force = program.force;
+  if(program.verbose) console.log("copying ...")
+  from_obj = parseUri(from);
+  to_obj = parseUri(to);
+  if(from_obj.is_local && to_obj.is_local) {
+    throw Error("both from and to are local files, use cp command instead");
+  }
+  else if(from_obj.is_local && !to_obj.is_local) {
+    copy_local_to_blob(from_obj, to_obj, force)
+  }
+  else if(!from_obj.is_local && to_obj.is_local) {
+    pull_from_blob(from_obj, to_obj, force)
+  }
+  else if(!from_obj.is_local && !to_obj.is_local) {
+    copy_blob_to_blob(from_obj, to_obj, force)
+  }
 }
 
 function move(from, to) {
@@ -154,6 +219,7 @@ var program = require('commander');
 
 program
 .version('0.0.1')
+  .option('-f, --force', 'force this action if <to> exists')
 .option('-v, --verbose', 'Run in verbose mode')
 
 program
