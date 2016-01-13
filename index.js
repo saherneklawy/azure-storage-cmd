@@ -335,8 +335,19 @@ program
   .command('rm-account <id>')
   .alias('remove-account')
   .action(removeAccount);
+program
+  .command('test [hi]')
+  .action(function(hi){});
+
+program.on('--help', function(){
+  console.log('  Path URI Schemes:');
+  console.log('');
+  console.log('    remote blob -> blob://account/container/path');
+  console.log('    local path -> relative-path/subirectory/file.txt OR /absolute-path/..');
+});
 
 
 program.parse(process.argv);
 
 if (!program.args.length) program.help();
+if (program.commands.indexOf(program.args[1]) < 0) program.help();
