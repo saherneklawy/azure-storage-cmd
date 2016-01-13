@@ -255,7 +255,27 @@ function move(from, to) {
 }
 
 function remove(file) {
-  console.log("removing ...")
+  var options = {};
+  if(program.force) {
+    options.deleteSnapshots = azure.BlobUtilities.SnapshotDeleteOptions.BLOB_AND_SNAPSHOTS;
+  }
+  if(program.verbose) console.log("removing ...")
+  path_obj = parseUri(file);
+  if(path_obj.is_local) {
+    throw Error("Use local rm command for local paths");
+  }
+  else {
+    blob_service = getBlobService(path_obj.account);
+    blob_service.deleteBlob(path_obj.container, path_obj.path, options,
+      function(error, result, response) {
+        if(!error) {
+        }
+        else {
+          throw error;
+        }
+      }
+    );
+  }
 }
 
 function addAccount(name, key, alias) {
