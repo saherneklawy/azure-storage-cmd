@@ -21,7 +21,8 @@
   "dependencies": {
     "azure-storage": "^0.7.0",
     "commander": "^2.9.0",
-    "lodash": "^3.10.1"
+    "lodash": "^3.10.1",
+    "mkdirp": "^0.5.1"
   },
   "bin": {
     "blob-cmd": "index.js"

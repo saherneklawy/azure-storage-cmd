@@ -4,6 +4,7 @@ var _ = require('lodash');
 var azure = require('azure-storage');
 var fs = require('fs');
 var path = require('path');
+var mkdirp = require('mkdirp');
 
 var config_file_name = '.azrblb.cfg'
 function getConfigFilePath() {
@@ -166,7 +167,25 @@ function copy_local_to_blob(from_obj, to_obj, force) {
 function pull_from_blob(from_obj, to_obj, force) {
   if(program.verbose) console.log("in pull_from_blob")
   from_blob_service = getBlobService(from_obj.account);
+
+  if(!to_obj.path || to_obj.path.length == 0)
+    to_obj.path = from_obj.path;
+
+  mkdirp.sync(path.dirname(to_obj.path))
+
+  from_blob_service.getBlobToLocalFile(from_obj.container,
+      from_obj.path,
+      to_obj.path,
+      function(error, result, response) {
+        if(!error) {
+          if(program.verbose) console.log("copied to: " + to_obj.uri);
+        }
+        else {
+          throw error;
+        }
+      });
 }
+
 function copy_blob_to_blob(from_obj, to_obj, force) {
   if(program.verbose) console.log("in copy_blob_to_blob")
   from_blob_service = getBlobService(from_obj.account);
