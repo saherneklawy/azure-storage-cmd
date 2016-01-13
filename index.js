@@ -124,7 +124,7 @@ function ls(callback, uri) {
   }
 }
 
-function copy_local_to_blob(from_obj, to_obj, force) {
+function copy_local_to_blob(from_obj, to_obj, force, callback) {
   if(program.verbose) console.log("in copy_local_to_blob")
   var options = {};
   if(!force) {
@@ -152,6 +152,7 @@ function copy_local_to_blob(from_obj, to_obj, force) {
           if(!error) {
             if(program.verbose)
               console.log(JSON.stringify(result, null, 2));
+            callback(result);
           }
           else {
             throw error;
@@ -164,7 +165,7 @@ function copy_local_to_blob(from_obj, to_obj, force) {
   });
 }
 
-function pull_from_blob(from_obj, to_obj, force) {
+function pull_from_blob(from_obj, to_obj, force, callback) {
   if(program.verbose) console.log("in pull_from_blob")
   from_blob_service = getBlobService(from_obj.account);
 
@@ -179,6 +180,7 @@ function pull_from_blob(from_obj, to_obj, force) {
       function(error, result, response) {
         if(!error) {
           if(program.verbose) console.log("copied to: " + to_obj.uri);
+          callback(result);
         }
         else {
           throw error;
@@ -186,7 +188,7 @@ function pull_from_blob(from_obj, to_obj, force) {
       });
 }
 
-function copy_blob_to_blob(from_obj, to_obj, force) {
+function copy_blob_to_blob(from_obj, to_obj, force, callback) {
   if(program.verbose) console.log("in copy_blob_to_blob")
   from_blob_service = getBlobService(from_obj.account);
   to_blob_service = getBlobService(to_obj.account);
@@ -220,6 +222,7 @@ function copy_blob_to_blob(from_obj, to_obj, force) {
           options,
           function(error, result, response) {
             if(!error) {
+              callback(result);
             }
             else {
               throw error;
@@ -231,7 +234,7 @@ function copy_blob_to_blob(from_obj, to_obj, force) {
   }
 }
 
-function copy(from, to) {
+function copy(from, to, callback) {
   var force = program.force;
   if(program.verbose) console.log("copying ...")
   from_obj = parseUri(from);
@@ -240,21 +243,25 @@ function copy(from, to) {
     throw Error("both from and to are local files, use cp command instead");
   }
   else if(from_obj.is_local && !to_obj.is_local) {
-    copy_local_to_blob(from_obj, to_obj, force)
+    copy_local_to_blob(from_obj, to_obj, force, callback)
   }
   else if(!from_obj.is_local && to_obj.is_local) {
-    pull_from_blob(from_obj, to_obj, force)
+    pull_from_blob(from_obj, to_obj, force, callback)
   }
   else if(!from_obj.is_local && !to_obj.is_local) {
-    copy_blob_to_blob(from_obj, to_obj, force)
+    copy_blob_to_blob(from_obj, to_obj, force, callback)
   }
 }
 
-function move(from, to) {
-  console.log("moving ...")
+function move(from, to, callback) {
+  if(!callback) callback = function(result){};
+  if(program.verbose) console.log("moving ...")
+  copy(from, to, function(copy_result) {
+    remove(from, callback);
+  });
 }
 
-function remove(file) {
+function remove(file, callback) {
   var options = {};
   if(program.force) {
     options.deleteSnapshots = azure.BlobUtilities.SnapshotDeleteOptions.BLOB_AND_SNAPSHOTS;
@@ -269,6 +276,7 @@ function remove(file) {
     blob_service.deleteBlob(path_obj.container, path_obj.path, options,
       function(error, result, response) {
         if(!error) {
+          callback(result);
         }
         else {
           throw error;
@@ -307,17 +315,17 @@ program
 program
   .command('cp <from> <to>')
   .alias('copy')
-  .action(copy);
+  .action(function(from, to) {copy(from, to, function(res) {})});
 
 program
   .command('rm <file>')
   .alias('remove')
-  .action(remove);
+  .action(function(file) {remove(file, function(res) {})});
 
 program
   .command('mv <from> <to>')
-  .alias('remove')
-  .action(remove);
+  .alias('move')
+  .action(function(from, to) {move(from, to, function(res) {})});
 
 program
   .command('add-account <name> <key> [alias]')
