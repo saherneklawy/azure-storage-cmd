@@ -190,6 +190,45 @@ function copy_blob_to_blob(from_obj, to_obj, force) {
   if(program.verbose) console.log("in copy_blob_to_blob")
   from_blob_service = getBlobService(from_obj.account);
   to_blob_service = getBlobService(to_obj.account);
+
+  var options = {};
+  if(!force) {
+    options.accessConditions = azure.AccessCondition.generateIfNotExistsCondition();
+  }
+  if(!to_obj.path || to_obj.path.length == 0) {
+    to_obj.path = from_obj.path;
+  }
+
+  if(from_obj.account != to_obj.account) {
+    throw new Error("Cannot copy across accounts yet. See: https://github.com/saherneklawy/azure-storage-cmd/issues/4")
+  }
+  else {
+    to_blob_service.createContainerIfNotExists(to_obj.container, {
+      publicAccessLevel: 'blob'
+    }, function(error, result, response) {
+      if (!error) {
+        // if result = true, container was created.
+        // if result = false, container already existed.
+        if(result) {
+          console.log("Created container for: " + to_obj.uri);
+        }
+
+        to_blob_service.startCopyBlob(
+          from_blob_service.getUrl(from_obj.container, from_obj.path),
+          to_obj.container,
+          to_obj.path,
+          options,
+          function(error, result, response) {
+            if(!error) {
+            }
+            else {
+              throw error;
+            }
+          }
+        );
+      }
+    });
+  }
 }
 
 function copy(from, to) {
