@@ -1,16 +1,29 @@
 {
   "name": "azure-storage-cmd",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A command line interface for managing Azure Storage Accounts similar to s3cmd for managing S3.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "azure",
+    "blob storage",
+    "cli"
+  ],
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/saherneklawy/azure-storage-cmd.git"
+  },
+  "repository": "",
+  "author": "Saher El-Neklawy <saher.neklawy@gmail.com> (http://saher.io)",
+  "license": "MIT",
   "dependencies": {
     "azure-storage": "^0.7.0",
     "commander": "^2.9.0",
     "lodash": "^3.10.1"
+  },
+  "bin": {
+    "blob-cmd": "index.js"
   }
 }
