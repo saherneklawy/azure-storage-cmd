@@ -136,7 +136,6 @@ function copy_local_to_blob(from_obj, to_obj, force, callback) {
 
   to_blob_service = getBlobService(to_obj.account);
   to_blob_service.createContainerIfNotExists(to_obj.container, {
-    publicAccessLevel: 'blob'
   }, function(error, result, response) {
     if (!error) {
       // if result = true, container was created.
@@ -206,7 +205,6 @@ function copy_blob_to_blob(from_obj, to_obj, force, callback) {
   }
   else {
     to_blob_service.createContainerIfNotExists(to_obj.container, {
-      publicAccessLevel: 'blob'
     }, function(error, result, response) {
       if (!error) {
         // if result = true, container was created.
