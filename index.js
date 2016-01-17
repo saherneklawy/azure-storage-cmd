@@ -348,4 +348,4 @@ program.on('--help', function(){
 program.parse(process.argv);
 
 if (!program.args.length) program.help();
-if (program.commands.indexOf(program.args[1]) < 0) program.help();
+if (_.intersection(program.commands, program.args).length == 0) program.help();
