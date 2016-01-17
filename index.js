@@ -302,7 +302,7 @@ function removeAccount(id) {
 var program = require('commander');
 
 program
-.version('0.0.1')
+.version('0.0.2')
   .option('-f, --force', 'force this action if <to> exists')
 .option('-v, --verbose', 'Run in verbose mode')
 
