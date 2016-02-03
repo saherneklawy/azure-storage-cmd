@@ -1,6 +1,6 @@
 {
   "name": "azure-storage-cmd",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A command line interface for managing Azure Storage Accounts similar to s3cmd for managing S3.",
   "main": "index.js",
   "scripts": {
