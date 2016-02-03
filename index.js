@@ -340,9 +340,6 @@ program
   .command('rm-account <id>')
   .alias('remove-account')
   .action(removeAccount);
-program
-  .command('test [hi]')
-  .action(function(hi){});
 
 program.on('--help', function(){
   console.log('  Path URI Schemes:');
