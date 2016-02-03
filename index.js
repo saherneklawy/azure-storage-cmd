@@ -145,32 +145,21 @@ function copy_local_to_blob(from_obj, to_obj, force, callback) {
   }
 
   to_blob_service = getBlobService(to_obj.account);
-  to_blob_service.createContainerIfNotExists(to_obj.container, {
-  }, function(error, result, response) {
-    if (!error) {
-      // if result = true, container was created.
-      // if result = false, container already existed.
-      if(result) {
-        console.log("Created container for: " + to_obj.uri);
-      }
-      speed_summary = to_blob_service.createBlockBlobFromLocalFile(to_obj.container,
-        to_obj.path,
-        from_obj.path,
-        options,
-        function(error, result, response) {
-          if(!error) {
-            if(program.verbose)
-              console.log(JSON.stringify(result, null, 2));
-            callback(result);
-          }
-          else {
-            throw error;
-          }
-        });
-    }
-    else {
-      throw error;
-    }
+  make_container(to_obj.uri, function(res) {
+    speed_summary = to_blob_service.createBlockBlobFromLocalFile(to_obj.container,
+      to_obj.path,
+      from_obj.path,
+      options,
+      function(error, result, response) {
+        if(!error) {
+          if(program.verbose)
+            console.log(JSON.stringify(result, null, 2));
+          callback(result);
+        }
+        else {
+          throw error;
+        }
+      });
   });
 }
 
@@ -195,6 +184,28 @@ function pull_from_blob(from_obj, to_obj, force, callback) {
           throw error;
         }
       });
+}
+
+function make_container(uri, callback) {
+  if(program.verbose) console.log("in make_container");
+  uri_obj = parseUri(uri);
+  blob_service = getBlobService(uri_obj.account);
+
+  var options = {};
+  blob_service.createContainerIfNotExists(uri_obj.container, {
+  }, function(error, result, response) {
+    if (!error) {
+      // if result = true, container was created.
+      // if result = false, container already existed.
+      if(result) {
+        console.log("Created container for: " + uri_obj.uri);
+      }
+      callback(result);
+    }
+    else {
+      throw error;
+    }
+  });
 }
 
 function copy_blob_to_blob(from_obj, to_obj, force, callback) {
@@ -343,6 +354,11 @@ program
   .command('rm-account <id>')
   .alias('remove-account')
   .action(removeAccount);
+
+program
+  .command('mk-container <uri>')
+  .alias('mkdir')
+  .action(function(uri) {make_container(uri, function(res) {})});
 
 program.on('--help', function(){
   console.log('  Path URI Schemes:');
