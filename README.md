@@ -11,12 +11,14 @@ A command line interface for managing Azure Storage Accounts similar to s3cmd fo
 
   Commands:
 
-    ls [URI]
-    cp|copy <from-URI> <to-URI>
-    rm|remove <file-URI>
-    mv|move <from-URI> <to-URI>
+    ls [uri]
+    cp|copy <from> <to>
+    rm|remove <file>
+    mv|move <from> <to>
     add-account <name> <key> [alias]
     rm-account|remove-account <id>
+    mk-container|mkdir <uri>
+    touch <uri>
 
   Options:
 
