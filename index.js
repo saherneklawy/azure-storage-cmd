@@ -97,10 +97,17 @@ function ls_account(callback, account, container) {
   }
   else {
     blobService.listContainersSegmented(currentToken, function(error, result, response) {
-      currentToken = result.continuationToken;
-      if(program.verbose)
-        console.log(JSON.stringify(result, null, 2));
-      callback(_.map(result.entries, function(i){return build_azure_blob_name(account, container, i.name)}));
+      if(!error) {
+        currentToken = result.continuationToken;
+        if(program.verbose)
+          console.log(JSON.stringify(result, null, 2));
+        callback(_.map(result.entries, function(i){return build_azure_blob_name(account, container, i.name)}));
+      }
+      else {
+        console.error("Error in account: " + account);
+        console.error(error);
+        //throw error;
+      }
     })
   }
 }
