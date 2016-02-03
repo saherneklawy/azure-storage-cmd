@@ -101,7 +101,10 @@ function ls_account(callback, account, container) {
         currentToken = result.continuationToken;
         if(program.verbose)
           console.log(JSON.stringify(result, null, 2));
-        callback(_.map(result.entries, function(i){return build_azure_blob_name(account, container, i.name)}));
+        if(result.entries.length > 0)
+          callback(_.map(result.entries, function(i){return build_azure_blob_name(account, container, i.name)}));
+        else
+          callback([build_azure_blob_name(account, null, null)])
       }
       else {
         console.error("Error in account: " + account);
