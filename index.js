@@ -208,6 +208,33 @@ function make_container(uri, callback) {
   });
 }
 
+function touch(uri, callback) {
+  if(program.verbose) console.log("in touch");
+  uri_obj = parseUri(uri);
+  blob_service = getBlobService(uri_obj.account);
+  var options = {};
+  var force = program.force;
+  if(!force) {
+    options.accessConditions = azure.AccessCondition.generateIfNotExistsCondition();
+  }
+  make_container(uri, function(res) {
+    speed_summary = blob_service.createBlockBlobFromText(uri_obj.container,
+      uri_obj.path,
+      "",
+      options,
+      function(error, result, response) {
+        if(!error) {
+          if(program.verbose)
+            console.log(JSON.stringify(result, null, 2));
+          callback(result);
+        }
+        else {
+          throw error;
+        }
+      });
+  });
+}
+
 function copy_blob_to_blob(from_obj, to_obj, force, callback) {
   if(program.verbose) console.log("in copy_blob_to_blob")
   from_blob_service = getBlobService(from_obj.account);
@@ -359,6 +386,10 @@ program
   .command('mk-container <uri>')
   .alias('mkdir')
   .action(function(uri) {make_container(uri, function(res) {})});
+
+program
+  .command('touch <uri>')
+  .action(function(uri) {touch(uri, function(res) {})});
 
 program.on('--help', function(){
   console.log('  Path URI Schemes:');
